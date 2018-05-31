@@ -9,7 +9,7 @@ class CoAPServer(CoAP):
         self.add_resource('basic/', BasicResource())
 
 def main():
-    server = CoAPServer("0.0.0.0", 5683)
+    server = CoAPServer("::", 5683)
     try:
         server.listen(10)
     except KeyboardInterrupt:
