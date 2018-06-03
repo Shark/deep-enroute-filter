@@ -2,7 +2,7 @@
 
 from coapthon.client.helperclient import HelperClient
 
-host = "::1"
+host = "fdf0:a23f:8cae:5b97::2"
 port = 5683
 path = "basic"
 

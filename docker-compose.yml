@@ -1,0 +1,33 @@
+version: '2.4'
+services:
+  coap-server:
+    image: sh4rk/iotsec-enroute-filtering-coap
+    build:
+      context: ./examples/coap
+    volumes:
+      - ./examples/coap:/usr/src/app
+    networks:
+      lan:
+        ipv6_address: fdf0:a23f:8cae:5b97::2
+  coap-client:
+    image: sh4rk/iotsec-enroute-filtering-coap
+    build:
+      context: ./examples/coap
+    volumes:
+      - ./examples/coap:/usr/src/app
+    networks:
+      wan:
+        ipv6_address: fdba:cd7e:4c8e:a6fd::2
+networks:
+  lan:
+    enable_ipv6: true
+    ipam:
+      driver: default
+      config:
+        - subnet: fdf0:a23f:8cae:5b97::/64
+  wan:
+    enable_ipv6: true
+    ipam:
+      driver: default
+      config:
+        - subnet: fdba:cd7e:4c8e:a6fd::/64
