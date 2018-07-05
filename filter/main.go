@@ -31,6 +31,8 @@ func main() {
 	defer nfq.Close()
 	packets := nfq.GetPackets()
 
+	allowedTokens := make(map[string]bool)
+
 	for true {
 		select {
 		case p := <-packets:
@@ -43,28 +45,21 @@ func main() {
           fmt.Println("This is a COAP packet!")
           msg, err := canopus.BytesToMessage(udp.LayerPayload())
           coapMsg := msg.(*canopus.CoapMessage)
+					msgToken := msg.GetTokenString()
 
           if(err != nil) {
             fmt.Printf("Error parsing CoAP: %v\n", err)
           } else {
             // check if message has been filtered
-            checked := false
-            option := coapMsg.GetOption(35)
-            if(option != nil) {
-              if value, ok := option.GetValue().(string); ok {
-                if(value == "checked") {
-                  checked = true
-                }
-              }
-            }
+            checked := allowedTokens[msgToken] == true;
 
             if(checked) {
               fmt.Println("Allowed packet");
               verdict = netfilter.NF_ACCEPT
             } else {
-              coapMsg.AddOption(35, "checked")
               canopus.PrintMessage(msg)
 
+							allowedTokens[msgToken] = true
               buf := gopacket.NewSerializeBuffer()
               opts := gopacket.SerializeOptions{FixLengths: true, ComputeChecksums: true}
 
