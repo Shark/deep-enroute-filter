@@ -23,7 +23,7 @@ func TestExtractCOAPMetadataFromPacket(t *testing.T) {
     t.Errorf("GenerateHashForPacket failed: %v", err)
   }
 
-  expected := &CoapPackageMetadata{
+  expected := &CoapPacketMetadata{
     "fd1b:2211:c9b6:0:54a7:8239:fdb8:f6c7",
     "fd00::ff:fe00:53c0",
     35428,
@@ -37,7 +37,7 @@ func TestExtractCOAPMetadataFromPacket(t *testing.T) {
 }
 
 func TestHashCOAPMetadata(t *testing.T) {
-  metadata := &CoapPackageMetadata{
+  metadata := &CoapPacketMetadata{
     "fd1b:2211:c9b6:0:54a7:8239:fdb8:f6c7",
     "fd00::ff:fe00:53c0",
     35428,

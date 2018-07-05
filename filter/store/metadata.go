@@ -11,7 +11,7 @@ import (
   "github.com/zubairhamed/canopus"
 )
 
-type CoapPackageMetadata struct {
+type CoapPacketMetadata struct {
   srcIP        string
   dstIP        string
   srcPort      int
@@ -19,13 +19,13 @@ type CoapPackageMetadata struct {
   coapMsgToken string
 }
 
-func (m *CoapPackageMetadata) Hash() string {
+func (m *CoapPacketMetadata) Hash() string {
   str := fmt.Sprintf("%s%s%d%d%s", m.srcIP, m.dstIP, m.srcPort, m.dstPort, m.coapMsgToken)
   sum := sha256.Sum256([]byte(str))
   return fmt.Sprintf("%x", sum)
 }
 
-func ExtractCOAPMetadataFromPacket(packet gopacket.Packet) (metadata *CoapPackageMetadata, err error) {
+func ExtractCOAPMetadataFromPacket(packet gopacket.Packet) (metadata *CoapPacketMetadata, err error) {
   inIPv6 := packet.Layer(layers.LayerTypeIPv6)
   inUDP := packet.Layer(layers.LayerTypeUDP)
 
@@ -49,7 +49,7 @@ func ExtractCOAPMetadataFromPacket(packet gopacket.Packet) (metadata *CoapPackag
 
     coapMsgToken := hex.EncodeToString(coapMsg.GetToken())
 
-    return &CoapPackageMetadata{
+    return &CoapPacketMetadata{
       srcIP,
       dstIP,
       srcPort,
