@@ -5,10 +5,9 @@ import (
 	"os"
 	"syscall"
 	"github.com/AkihiroSuda/go-netfilter-queue"
-	"github.com/google/gopacket/layers"
 	"github.com/zubairhamed/canopus"
 
-	"gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/store"
+	"gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/parser"
 	"gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/network"
 )
 
@@ -38,38 +37,27 @@ func main() {
 		case p := <-packets:
 			verdict := netfilter.NF_DROP
 
-			if udpLayer := p.Packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
-				udp, _ := udpLayer.(*layers.UDP)
-				if(udp.DstPort == 5683) { // CoAP packet
-					fmt.Println("This is a COAP packet!")
-					msg, err := canopus.BytesToMessage(udp.LayerPayload())
+			message, err := parser.ParseCOAPMessageFromPacket(p.Packet)
+			if(err != nil) {
+				fmt.Println("Error parsing packet: %v", err)
+				continue
+			}
 
-					if(err != nil) {
-						fmt.Printf("Error parsing CoAP: %v\n", err)
-					} else {
-						metadata, err := store.ExtractCOAPMetadataFromPacket(p.Packet)
-						if(err != nil) {
-							fmt.Printf("Error extracting COAP metadata: %v", err)
-						}
+			packetHash := message.Metadata.Hash()
 
-						packetHash := metadata.Hash()
+			// check if message has been filtered
+			checked := allowedTokens[packetHash] == true;
 
-						// check if message has been filtered
-						checked := allowedTokens[packetHash] == true;
+			if(checked) {
+				fmt.Println("Allowed packet");
+				verdict = netfilter.NF_ACCEPT
+			} else {
+				canopus.PrintMessage(message.Message)
 
-						if(checked) {
-							fmt.Println("Allowed packet");
-							verdict = netfilter.NF_ACCEPT
-						} else {
-							canopus.PrintMessage(msg)
-
-							allowedTokens[packetHash] = true
-							err := network.ReinjectPacket(fd, p.Packet)
-							if(err != nil) {
-								fmt.Printf("Error reinjecting packet: %v", err)
-							}
-						}
-					}
+				allowedTokens[packetHash] = true
+				err := network.ReinjectPacket(fd, p.Packet)
+				if(err != nil) {
+					fmt.Printf("Error reinjecting packet: %v", err)
 				}
 			}
 

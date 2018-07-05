@@ -1,4 +1,4 @@
-package store
+package parser
 
 import (
   "crypto/sha256"
@@ -11,7 +11,7 @@ import (
   "github.com/zubairhamed/canopus"
 )
 
-type CoapPacketMetadata struct {
+type COAPMessageMetadata struct {
   srcIP        string
   dstIP        string
   srcPort      int
@@ -19,13 +19,13 @@ type CoapPacketMetadata struct {
   coapMsgToken string
 }
 
-func (m *CoapPacketMetadata) Hash() string {
+func (m *COAPMessageMetadata) Hash() string {
   str := fmt.Sprintf("%s%s%d%d%s", m.srcIP, m.dstIP, m.srcPort, m.dstPort, m.coapMsgToken)
   sum := sha256.Sum256([]byte(str))
   return fmt.Sprintf("%x", sum)
 }
 
-func ExtractCOAPMetadataFromPacket(packet gopacket.Packet) (metadata *CoapPacketMetadata, err error) {
+func extractCOAPMetadata(packet gopacket.Packet, message canopus.Message) (metadata *COAPMessageMetadata, err error) {
   inIPv6 := packet.Layer(layers.LayerTypeIPv6)
   inUDP := packet.Layer(layers.LayerTypeUDP)
 
@@ -42,14 +42,9 @@ func ExtractCOAPMetadataFromPacket(packet gopacket.Packet) (metadata *CoapPacket
       return nil, errors.New("Packet is not a COAP message")
     }
 
-    coapMsg, err := canopus.BytesToMessage(udpLayer.LayerPayload())
-    if(err != nil) {
-      return nil, errors.New("Failed to parse COAP message")
-    }
+    coapMsgToken := hex.EncodeToString(message.GetToken())
 
-    coapMsgToken := hex.EncodeToString(coapMsg.GetToken())
-
-    return &CoapPacketMetadata{
+    return &COAPMessageMetadata{
       srcIP,
       dstIP,
       srcPort,

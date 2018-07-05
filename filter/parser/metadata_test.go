@@ -1,4 +1,4 @@
-package store
+package parser
 
 import (
   "encoding/hex"
@@ -10,20 +10,21 @@ import (
 )
 
 
-func TestExtractCOAPMetadataFromPacket(t *testing.T) {
+func TestExtractCOAPMetadata(t *testing.T) {
   packetBytes, err := hex.DecodeString("600618270021113ffd1b2211c9b6000054a78239fdb8f6c7fd00000000000000000000fffe0053c08a64163300217b1e44019df9e91f89b5bb2e77656c6c2d6b6e6f776e04636f7265")
 	if err != nil {
 		t.Error("Byte decoding failed")
 	}
   packet := gopacket.NewPacket(packetBytes, layers.LayerTypeIPv6, gopacket.Default)
+  message, _ := parsePacketPayloadAsCOAPMessage(packet)
 
-  metadata, err := ExtractCOAPMetadataFromPacket(packet)
+  metadata, err := extractCOAPMetadata(packet, message)
 
   if(err != nil) {
-    t.Errorf("GenerateHashForPacket failed: %v", err)
+    t.Errorf("extractCOAPMetadata failed: %v", err)
   }
 
-  expected := &CoapPacketMetadata{
+  expected := &COAPMessageMetadata{
     "fd1b:2211:c9b6:0:54a7:8239:fdb8:f6c7",
     "fd00::ff:fe00:53c0",
     35428,
@@ -37,7 +38,7 @@ func TestExtractCOAPMetadataFromPacket(t *testing.T) {
 }
 
 func TestHashCOAPMetadata(t *testing.T) {
-  metadata := &CoapPacketMetadata{
+  metadata := &COAPMessageMetadata{
     "fd1b:2211:c9b6:0:54a7:8239:fdb8:f6c7",
     "fd00::ff:fe00:53c0",
     35428,
