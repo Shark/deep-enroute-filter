@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"sync"
 	"syscall"
 
 	"github.com/AkihiroSuda/go-netfilter-queue"
@@ -36,9 +37,10 @@ func main() {
 	incomingMessages := make(chan *types.COAPMessage, 10)
 	outgoingPackets := make(chan gopacket.Packet, 10)
 	whitelistedMessageHashes := make(map[string]bool)
+	var whitelistedMessagesHashesMutex sync.RWMutex
 
 	go func() {
-		pipeline.Consume(incomingMessages, outgoingPackets, whitelistedMessageHashes)
+		pipeline.Consume(incomingMessages, outgoingPackets, whitelistedMessageHashes, whitelistedMessagesHashesMutex)
 	}()
 
 	go func() {
@@ -58,9 +60,11 @@ func main() {
 
 			incomingMessages <- message
 
+			whitelistedMessagesHashesMutex.RLock()
 			if whitelistedMessageHashes[message.Metadata.Hash()] {
 				verdict = netfilter.NF_ACCEPT
 			}
+			whitelistedMessagesHashesMutex.RUnlock()
 
 			p.SetVerdict(verdict)
 		}
