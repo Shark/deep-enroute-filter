@@ -3,25 +3,25 @@ package main
 import (
 	"fmt"
 	"os"
-  "net"
-  "syscall"
-  "github.com/AkihiroSuda/go-netfilter-queue"
-  "github.com/google/gopacket"
+	"syscall"
+	"github.com/AkihiroSuda/go-netfilter-queue"
 	"github.com/google/gopacket/layers"
-  "github.com/zubairhamed/canopus"
+	"github.com/zubairhamed/canopus"
+
+	"gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/store"
+	"gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/network"
 )
 
 func main() {
 	var err error
 
-  fd, err:= syscall.Socket(syscall.AF_PACKET, syscall.SOCK_RAW,
-  				syscall.ETH_P_ALL)
-  if (err != nil) {
-    fmt.Println("Error: " + err.Error())
-    return;
-  }
-  fmt.Println("Obtained fd ", fd)
-  defer syscall.Close(fd)
+	fd, err:= syscall.Socket(syscall.AF_PACKET, syscall.SOCK_RAW, syscall.ETH_P_ALL)
+	if (err != nil) {
+		fmt.Println("Error: " + err.Error())
+		return;
+	}
+	fmt.Println("Obtained fd ", fd)
+	defer syscall.Close(fd)
 
 	nfq, err := netfilter.NewNFQueue(0, 100, netfilter.NF_DEFAULT_PACKET_SIZE)
 	if err != nil {
@@ -36,81 +36,43 @@ func main() {
 	for true {
 		select {
 		case p := <-packets:
-      verdict := netfilter.NF_DROP
+			verdict := netfilter.NF_DROP
 
-      ipv6 := p.Packet.Layer(layers.LayerTypeIPv6).(*layers.IPv6)
-      if udpLayer := p.Packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
-        udp, _ := udpLayer.(*layers.UDP)
-        if(udp.DstPort == 5683) { // CoAP packet
-          fmt.Println("This is a COAP packet!")
-          msg, err := canopus.BytesToMessage(udp.LayerPayload())
-          coapMsg := msg.(*canopus.CoapMessage)
-					msgToken := msg.GetTokenString()
+			if udpLayer := p.Packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
+				udp, _ := udpLayer.(*layers.UDP)
+				if(udp.DstPort == 5683) { // CoAP packet
+					fmt.Println("This is a COAP packet!")
+					msg, err := canopus.BytesToMessage(udp.LayerPayload())
 
-          if(err != nil) {
-            fmt.Printf("Error parsing CoAP: %v\n", err)
-          } else {
-            // check if message has been filtered
-            checked := allowedTokens[msgToken] == true;
+					if(err != nil) {
+						fmt.Printf("Error parsing CoAP: %v\n", err)
+					} else {
+						metadata, err := store.ExtractCOAPMetadataFromPacket(p.Packet)
+						if(err != nil) {
+							fmt.Printf("Error extracting COAP metadata: %v", err)
+						}
 
-            if(checked) {
-              fmt.Println("Allowed packet");
-              verdict = netfilter.NF_ACCEPT
-            } else {
-              canopus.PrintMessage(msg)
+						packetHash := metadata.Hash()
 
-							allowedTokens[msgToken] = true
-              buf := gopacket.NewSerializeBuffer()
-              opts := gopacket.SerializeOptions{FixLengths: true, ComputeChecksums: true}
+						// check if message has been filtered
+						checked := allowedTokens[packetHash] == true;
 
-              msgBytes, err := canopus.MessageToBytes(coapMsg)
-              if(err != nil) {
-                fmt.Printf("Error serializing message: %v", err)
-              }
-              bytes, _ := buf.PrependBytes(len(msgBytes))
-              copy(bytes, msgBytes)
+						if(checked) {
+							fmt.Println("Allowed packet");
+							verdict = netfilter.NF_ACCEPT
+						} else {
+							canopus.PrintMessage(msg)
 
-              udp.SetNetworkLayerForChecksum(ipv6)
-              udp.SerializeTo(buf, opts)
-              ipv6.SerializeTo(buf, opts)
+							allowedTokens[packetHash] = true
+							err := network.ReinjectPacket(fd, p.Packet)
+							if(err != nil) {
+								fmt.Printf("Error reinjecting packet: %v", err)
+							}
+						}
+					}
+				}
+			}
 
-              iface, err := net.InterfaceByName("lo")
-              if(err != nil) {
-                fmt.Println("Did not find iface")
-              }
-              lb, _ := net.ParseMAC("00:00:00:00:00:00")
-              frame := layers.Ethernet{
-                SrcMAC: lb,
-                DstMAC: lb,
-                EthernetType: 0x86DD, // IPv6
-              }
-              err = frame.SerializeTo(buf, opts)
-              if(err != nil) {
-                fmt.Printf("Error serialize eth: %v\n", err)
-              }
-
-              var addr syscall.SockaddrLinklayer
-              addr.Protocol = syscall.ETH_P_IPV6
-              addr.Ifindex = iface.Index
-              addr.Hatype = syscall.ARPHRD_LOOPBACK
-
-              decoded := gopacket.NewPacket(buf.Bytes(), layers.LayerTypeEthernet, gopacket.Default)
-              for _, layer := range decoded.Layers() {
-    fmt.Println("PACKET LAYER:", layer.LayerType())
-  }
-
-              // Send the packet
-              err = syscall.Sendto(fd, buf.Bytes(), 0, &addr)
-
-              if(err != nil) {
-                fmt.Printf("Error sending ethernet packet: %v", err)
-              }
-            }
-          }
-        }
-      }
-
-      fmt.Println("verdict")
 			p.SetVerdict(verdict)
 		}
 	}
