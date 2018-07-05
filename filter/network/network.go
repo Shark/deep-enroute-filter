@@ -10,6 +10,15 @@ import (
 	"github.com/google/gopacket/layers"
 )
 
+func ReinjectPackets(outgoingPackets <-chan gopacket.Packet, rawSocketFd int) {
+  for packet := range outgoingPackets {
+    err := ReinjectPacket(rawSocketFd, packet)
+    if err != nil {
+      fmt.Printf("Error reinjecting packet: %v", err)
+    }
+  }
+}
+
 func ReinjectPacket(rawSocketFd int, packet gopacket.Packet) error {
   buf := gopacket.NewSerializeBuffer()
   opts := gopacket.SerializeOptions{FixLengths: true, ComputeChecksums: true}

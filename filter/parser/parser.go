@@ -4,16 +4,12 @@ import (
   "errors"
   "fmt"
 
+  "gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/types"
+
   "github.com/google/gopacket"
   "github.com/google/gopacket/layers"
   "github.com/zubairhamed/canopus"
 )
-
-type COAPMessage struct {
-  Metadata COAPMessageMetadata
-  Packet gopacket.Packet
-  Message canopus.Message
-}
 
 func parsePacketPayloadAsCOAPMessage(packet gopacket.Packet) (message canopus.Message, err error) {
   defer func() {
@@ -30,7 +26,7 @@ func parsePacketPayloadAsCOAPMessage(packet gopacket.Packet) (message canopus.Me
   }
 }
 
-func ParseCOAPMessageFromPacket(packet gopacket.Packet) (*COAPMessage, error) {
+func ParseCOAPMessageFromPacket(packet gopacket.Packet) (*types.COAPMessage, error) {
   if udpLayer, ok := packet.Layer(layers.LayerTypeUDP).(*layers.UDP); ok {
     dstPort := int(udpLayer.DstPort)
 
@@ -48,7 +44,7 @@ func ParseCOAPMessageFromPacket(packet gopacket.Packet) (*COAPMessage, error) {
       return nil, fmt.Errorf("Failed to extract COAP metadata: %v", err)
     }
 
-    return &COAPMessage{
+    return &types.COAPMessage{
       *metadata,
       packet,
       coapMsg,

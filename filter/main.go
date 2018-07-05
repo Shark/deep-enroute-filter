@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"os"
 	"syscall"
-	"github.com/AkihiroSuda/go-netfilter-queue"
-	"github.com/zubairhamed/canopus"
 
-	"gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/parser"
+	"github.com/AkihiroSuda/go-netfilter-queue"
+	"github.com/google/gopacket"
+
 	"gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/network"
+	"gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/parser"
+	"gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/pipeline"
+	"gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/types"
 )
 
 func main() {
@@ -30,7 +33,17 @@ func main() {
 	defer nfq.Close()
 	packets := nfq.GetPackets()
 
-	allowedTokens := make(map[string]bool)
+	incomingMessages := make(chan *types.COAPMessage, 10)
+	outgoingPackets := make(chan gopacket.Packet, 10)
+	whitelistedMessageHashes := make(map[string]bool)
+
+	go func() {
+		pipeline.Consume(incomingMessages, outgoingPackets, &whitelistedMessageHashes)
+	}()
+
+	go func() {
+		network.ReinjectPackets(outgoingPackets, fd)
+	}()
 
 	for true {
 		select {
@@ -43,22 +56,10 @@ func main() {
 				continue
 			}
 
-			packetHash := message.Metadata.Hash()
+			incomingMessages <- message
 
-			// check if message has been filtered
-			checked := allowedTokens[packetHash] == true;
-
-			if(checked) {
-				fmt.Println("Allowed packet");
+			if whitelistedMessageHashes[message.Metadata.Hash()] {
 				verdict = netfilter.NF_ACCEPT
-			} else {
-				canopus.PrintMessage(message.Message)
-
-				allowedTokens[packetHash] = true
-				err := network.ReinjectPacket(fd, p.Packet)
-				if(err != nil) {
-					fmt.Printf("Error reinjecting packet: %v", err)
-				}
 			}
 
 			p.SetVerdict(verdict)

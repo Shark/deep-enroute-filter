@@ -1,31 +1,17 @@
 package parser
 
 import (
-  "crypto/sha256"
   "encoding/hex"
   "errors"
-  "fmt"
+
+  "gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/types"
 
   "github.com/google/gopacket"
   "github.com/google/gopacket/layers"
   "github.com/zubairhamed/canopus"
 )
 
-type COAPMessageMetadata struct {
-  srcIP        string
-  dstIP        string
-  srcPort      int
-  dstPort      int
-  coapMsgToken string
-}
-
-func (m *COAPMessageMetadata) Hash() string {
-  str := fmt.Sprintf("%s%s%d%d%s", m.srcIP, m.dstIP, m.srcPort, m.dstPort, m.coapMsgToken)
-  sum := sha256.Sum256([]byte(str))
-  return fmt.Sprintf("%x", sum)
-}
-
-func extractCOAPMetadata(packet gopacket.Packet, message canopus.Message) (metadata *COAPMessageMetadata, err error) {
+func extractCOAPMetadata(packet gopacket.Packet, message canopus.Message) (metadata *types.COAPMessageMetadata, err error) {
   inIPv6 := packet.Layer(layers.LayerTypeIPv6)
   inUDP := packet.Layer(layers.LayerTypeUDP)
 
@@ -44,7 +30,7 @@ func extractCOAPMetadata(packet gopacket.Packet, message canopus.Message) (metad
 
     coapMsgToken := hex.EncodeToString(message.GetToken())
 
-    return &COAPMessageMetadata{
+    return &types.COAPMessageMetadata{
       srcIP,
       dstIP,
       srcPort,
