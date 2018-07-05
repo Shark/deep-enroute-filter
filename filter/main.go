@@ -38,7 +38,7 @@ func main() {
 	whitelistedMessageHashes := make(map[string]bool)
 
 	go func() {
-		pipeline.Consume(incomingMessages, outgoingPackets, &whitelistedMessageHashes)
+		pipeline.Consume(incomingMessages, outgoingPackets, whitelistedMessageHashes)
 	}()
 
 	go func() {

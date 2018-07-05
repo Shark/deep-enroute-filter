@@ -6,11 +6,11 @@ import (
   "github.com/google/gopacket"
 )
 
-func Consume(incomingMessages <-chan *types.COAPMessage, outgoingPackets chan<- gopacket.Packet, whitelistedMessageHashes *map[string]bool) {
+func Consume(incomingMessages <-chan *types.COAPMessage, outgoingPackets chan<- gopacket.Packet, whitelistedMessageHashes map[string]bool) {
   for message := range incomingMessages {
     packetHash := message.Metadata.Hash()
 
-    (*whitelistedMessageHashes)[packetHash] = true
+    whitelistedMessageHashes[packetHash] = true
 
     outgoingPackets <- message.Packet
   }
