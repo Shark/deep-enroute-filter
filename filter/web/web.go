@@ -10,6 +10,7 @@ import (
 )
 
 type webProcessedMessage struct {
+  ShortHash string
   Method string
   UriPath string
   RuleProcessingResults []webRuleProcessingResult
@@ -39,7 +40,7 @@ func ListenAndServe(processedMessages <-chan types.ProcessedMessage) {
 
   go func() {
     for message := range processedMessages {
-      webProcessingResults := make([]webRuleProcessingResult, len(message.RuleProcessingResults))
+      webProcessingResults := make([]webRuleProcessingResult, 0)
       for _, processingResult := range message.RuleProcessingResults {
         webProcessingResult := webRuleProcessingResult{
           Allowed: processingResult.Allowed,
@@ -53,6 +54,7 @@ func ListenAndServe(processedMessages <-chan types.ProcessedMessage) {
         webProcessingResults = append(webProcessingResults, webProcessingResult)
       }
       webMessage := webProcessedMessage{
+        message.Message.Metadata.Hash()[0:6],
         canopus.MethodString(message.Message.Message.GetCode()),
         message.Message.Message.GetURIPath(),
         webProcessingResults,

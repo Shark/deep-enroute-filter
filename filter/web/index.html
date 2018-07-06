@@ -10,12 +10,14 @@
 
     <table>
       <tr>
+        <th>ShortHash</th>
         <th>Method</th>
         <th>UriPath</th>
         <th>RuleProcessingResults</th>
       </tr>
       {{range .ProcessedMessages}}
         <tr>
+          <td>{{ .ShortHash }}</td>
           <td>{{ .Method }}</td>
           <td>{{ .UriPath }}</td>
           <td>
