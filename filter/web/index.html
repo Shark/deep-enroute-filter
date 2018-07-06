@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>iotsec-enroute-filtering</title>
+  </head>
+  <body>
+    <h1>Processed Messages</h1>
+
+    <table>
+      <tr>
+        <th>Message Hash</th>
+      </tr>
+      {{range .ProcessedMessages}}
+        <tr>
+          <td>{{ .Message.Metadata.Hash }}</td>
+        </tr>
+      {{end}}
+    </table>
+  </body>
+</html>

@@ -13,6 +13,7 @@ import (
 	"gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/parser"
 	"gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/pipeline"
 	"gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/types"
+	"gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/web"
 )
 
 func main() {
@@ -35,17 +36,20 @@ func main() {
 	packets := nfq.GetPackets()
 
 	incomingMessages := make(chan *types.COAPMessage, 10)
+	processedMessages := make(chan types.ProcessedMessage, 10)
 	outgoingPackets := make(chan gopacket.Packet, 10)
 	whitelistedMessageHashes := make(map[string]bool)
 	var whitelistedMessagesHashesMutex sync.RWMutex
 
 	go func() {
-		pipeline.Consume(incomingMessages, outgoingPackets, whitelistedMessageHashes, whitelistedMessagesHashesMutex)
+		pipeline.Consume(incomingMessages, processedMessages, outgoingPackets, whitelistedMessageHashes, whitelistedMessagesHashesMutex)
 	}()
 
 	go func() {
 		network.ReinjectPackets(outgoingPackets, fd)
 	}()
+
+	web.ListenAndServe(processedMessages)
 
 	for true {
 		select {

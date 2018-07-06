@@ -29,9 +29,15 @@ func (m *COAPMessageMetadata) Hash() string {
 
 type RuleProcessingResult struct {
   Allowed bool
-  Message string
+  Rule Rule
+  RuleMessage *string
 }
 
 type Rule interface {
   Process(message *COAPMessage) RuleProcessingResult
+}
+
+type ProcessedMessage struct {
+  Message *COAPMessage
+  RuleProcessingResults []RuleProcessingResult
 }

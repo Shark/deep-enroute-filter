@@ -12,17 +12,19 @@ type MethodRule struct {
   AllowedMethods []string
 }
 
-func (r *MethodRule) Process(message *types.COAPMessage) types.RuleProcessingResult {
+func (r MethodRule) Process(message *types.COAPMessage) types.RuleProcessingResult {
   methodString := canopus.MethodString(message.Message.GetCode())
 
   for _, method := range r.AllowedMethods {
     if(method == methodString) {
-      return types.RuleProcessingResult{Allowed: true}
+      return types.RuleProcessingResult{Rule: r, Allowed: true}
     }
   }
 
+  ruleMessage := fmt.Sprintf("%s is not allowed: %v", methodString, r.AllowedMethods)
   return types.RuleProcessingResult{
     false,
-    fmt.Sprintf("%s is not allowed: %v", methodString, r.AllowedMethods),
+    r,
+    &ruleMessage,
   }
 }
