@@ -16,7 +16,7 @@ func Consume(incomingMessages <-chan *types.COAPMessage, outgoingPackets chan<- 
     rule := rules.MethodRule{AllowedMethods: []string{"GET"}}
     result := rule.Process(message)
 
-    if result {
+    if result.Allowed {
       whitelistedMessagesHashesMutex.Lock()
       whitelistedMessageHashes[packetHash] = true
       whitelistedMessagesHashesMutex.Unlock()

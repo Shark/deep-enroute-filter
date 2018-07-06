@@ -27,6 +27,11 @@ func (m *COAPMessageMetadata) Hash() string {
   return fmt.Sprintf("%x", sum)
 }
 
+type RuleProcessingResult struct {
+  Allowed bool
+  Message string
+}
+
 type Rule interface {
-  Process(message *COAPMessage) bool
+  Process(message *COAPMessage) RuleProcessingResult
 }
