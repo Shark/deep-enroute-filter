@@ -26,3 +26,7 @@ func (m *COAPMessageMetadata) Hash() string {
   sum := sha256.Sum256([]byte(str))
   return fmt.Sprintf("%x", sum)
 }
+
+type Rule interface {
+  Process(message *COAPMessage) bool
+}
