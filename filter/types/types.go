@@ -35,6 +35,7 @@ type RuleProcessingResult struct {
 
 type Rule interface {
   Process(message *COAPMessage) RuleProcessingResult
+  Name() string
 }
 
 type ProcessedMessage struct {

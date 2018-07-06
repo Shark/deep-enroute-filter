@@ -28,3 +28,7 @@ func (r MethodRule) Process(message *types.COAPMessage) types.RuleProcessingResu
     &ruleMessage,
   }
 }
+
+func (r MethodRule) Name() string {
+  return "MethodRule"
+}

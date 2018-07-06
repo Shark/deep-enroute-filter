@@ -10,11 +10,21 @@
 
     <table>
       <tr>
-        <th>Message Hash</th>
+        <th>Method</th>
+        <th>UriPath</th>
+        <th>RuleProcessingResults</th>
       </tr>
       {{range .ProcessedMessages}}
         <tr>
-          <td>{{ .Message.Metadata.Hash }}</td>
+          <td>{{ .Method }}</td>
+          <td>{{ .UriPath }}</td>
+          <td>
+            <ul>
+            {{range .RuleProcessingResults}}
+              <li>Name: {{.RuleName}}, Allowed: {{.Allowed}}, Message: {{.RuleMessage}}</li>
+            {{end}}
+            </ul>
+          </td>
         </tr>
       {{end}}
     </table>
