@@ -65,8 +65,10 @@ func main() {
 			}
 
 			whitelistedMessagesHashesMutex.RLock()
-			if whitelistedMessageHashes[message.Metadata.Hash()] {
-				verdict = netfilter.NF_ACCEPT
+			if val, ok := whitelistedMessageHashes[message.Metadata.Hash()]; ok {
+				if val == true {
+					verdict = netfilter.NF_ACCEPT
+				}
 			} else {
 				incomingMessages <- message
 			}
