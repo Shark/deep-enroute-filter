@@ -1,0 +1,12 @@
+.container--main {
+  margin-top: 2em;
+}
+
+.container--main table {
+  width: 100%;
+}
+
+.container--main table tfoot td {
+  font-size: 10pt;
+  text-align: right;
+}

@@ -21,7 +21,7 @@ func (r MethodRule) Process(message *types.COAPMessage) types.RuleProcessingResu
     }
   }
 
-  ruleMessage := fmt.Sprintf("%s is not allowed: %v", methodString, r.AllowedMethods)
+  ruleMessage := fmt.Sprintf("%s is not allowed, only %v", methodString, r.AllowedMethods)
   return types.RuleProcessingResult{
     false,
     r,

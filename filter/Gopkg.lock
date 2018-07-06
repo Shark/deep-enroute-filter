@@ -7,6 +7,12 @@
   revision = "28613130fef610df5fd4942e1ad89bb7d12b86bd"
 
 [[projects]]
+  name = "github.com/gobuffalo/packr"
+  packages = ["."]
+  revision = "bd47f2894846e32edcf9aa37290fef76c327883f"
+  version = "v1.11.1"
+
+[[projects]]
   name = "github.com/google/gopacket"
   packages = [
     ".",
@@ -16,24 +22,19 @@
   version = "v1.1.14"
 
 [[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
+
+[[projects]]
   name = "github.com/zubairhamed/canopus"
   packages = ["."]
   revision = "e374f5b1a0f335982a91a13b396504c4e1be4961"
 
-[[projects]]
-  branch = "master"
-  name = "golang.org/x/net"
-  packages = [
-    "bpf",
-    "internal/iana",
-    "internal/socket",
-    "ipv6"
-  ]
-  revision = "1e491301e022f8f977054da4c2d852decd59571f"
-
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e9e0158dd8111c77b03314402cddebd62e155d77e46b0a8e7fbef651094a5b54"
+  inputs-digest = "3c0be058d5f70fe5104e6e7f9dae83f8320d30e1e0ff1c0ac314b34ed2341f2c"
   solver-name = "gps-cdcl"
   solver-version = 1

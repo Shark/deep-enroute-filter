@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>iotsec-enroute-filtering</title>
+    <link rel="stylesheet" href="/assets/bulma.min.css">
+    <link rel="stylesheet" href="/assets/application.css">
+  </head>
+  <body>
+    <div class="container container--main">
+      <h1 class="title">Processed Messages</h1>
+
+      <table class="table is-bordered is-striped is-hoverable">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>ShortHash</th>
+            <th>Method</th>
+            <th>UriPath</th>
+            <th>RuleProcessingResults</th>
+          </tr>
+        </thead>
+        <tbody>
+        {{range .ProcessedMessages}}
+          <tr>
+            <td>{{ .RelativeTimestamp }}</td>
+            <td>{{ .ShortHash }}</td>
+            <td>{{ .Method }}</td>
+            <td>{{ .UriPath }}</td>
+            <td>
+              {{range .RuleProcessingResults}}
+                <span class="tag {{if .Allowed}}is-success{{else}}is-warning{{end}}">
+                  {{.RuleName}}{{if .RuleMessage}}: {{.RuleMessage}}{{end}}
+                </span>
+              {{end}}
+            </td>
+          </tr>
+        {{end}}
+        </tbody>
+        <tfoot>
+          <tr><td colspan="5">showing {{ len .ProcessedMessages }} messages</td></tr>
+        </tfoot>
+      </table>
+    </div>
+  </body>
+</html>
