@@ -49,7 +49,9 @@ func main() {
 		network.ReinjectPackets(outgoingPackets, fd)
 	}()
 
-	web.ListenAndServe(processedMessages)
+	go func() {
+		web.ListenAndServe(processedMessages)
+	}()
 
 	for true {
 		select {
