@@ -5,12 +5,26 @@ import (
   "gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/types"
 )
 
-func Consume(incomingMessages <-chan *types.COAPMessage, processedMessages chan<- types.ProcessedMessage, outgoingMessages chan<- *types.COAPMessage, authenticityToken string) {
+type ProcessedMessageEvent struct {
+  processedMessage types.ProcessedMessage
+}
+
+func (e *ProcessedMessageEvent) Type() string {
+  return "ProcessedMessageEvent"
+}
+
+func (e *ProcessedMessageEvent) Payload() interface{} {
+  return e.processedMessage
+}
+
+func Consume(incomingMessages <-chan *types.COAPMessage, outgoingMessages chan<- *types.COAPMessage, authenticityToken string, events chan types.Event) {
   for message := range incomingMessages {
     rule := rules.MethodRule{AllowedMethods: []string{"GET"}}
     result := rule.Process(message)
 
-    processedMessages <- types.ProcessedMessage{message, []types.RuleProcessingResult{result}}
+    events <- &ProcessedMessageEvent{
+      types.ProcessedMessage{message, []types.RuleProcessingResult{result}},
+    }
 
     if result.Allowed {
       message.Message.AddOption(65000, authenticityToken)

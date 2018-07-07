@@ -44,3 +44,8 @@ type ProcessedMessage struct {
   Message *COAPMessage
   RuleProcessingResults []RuleProcessingResult
 }
+
+type Event interface {
+  Type() string
+  Payload() interface{}
+}

@@ -50,11 +50,11 @@ func main() {
 	packets := nfq.GetPackets()
 
 	incomingMessages := make(chan *types.COAPMessage, 10)
-	processedMessages := make(chan types.ProcessedMessage, 10)
+	events := make(chan types.Event, 10)
 	outgoingMessages := make(chan *types.COAPMessage, 10)
 
 	go func() {
-		pipeline.Consume(incomingMessages, processedMessages, outgoingMessages, *authenticityToken)
+		pipeline.Consume(incomingMessages, outgoingMessages, *authenticityToken, events)
 	}()
 
 	go func() {
@@ -62,7 +62,7 @@ func main() {
 	}()
 
 	go func() {
-		web.ListenAndServe(processedMessages)
+		web.ListenAndServe(events)
 	}()
 
 	for true {

@@ -2,11 +2,11 @@
   margin-top: 2em;
 }
 
-.container--main table {
+.processed-messages--table {
   width: 100%;
 }
 
-.container--main table tfoot td {
-  font-size: 10pt;
-  text-align: right;
+.processed-messages--table pre {
+  background-color: transparent;
+  padding: 0;
 }

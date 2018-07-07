@@ -6,41 +6,34 @@
     <title>iotsec-enroute-filtering</title>
     <link rel="stylesheet" href="/assets/bulma.min.css">
     <link rel="stylesheet" href="/assets/application.css">
+    <script src="/assets/application.js"></script>
   </head>
   <body>
+    <section class="hero is-primary">
+      <div class="hero-body">
+        <div class="container">
+          <h1 class="title">
+            COAP Application Firewall
+          </h1>
+          <h2 class="subtitle" id="connection-status"></h2>
+        </div>
+      </div>
+    </section>
     <div class="container container--main">
       <h1 class="title">Processed Messages</h1>
 
-      <table class="table is-bordered is-striped is-hoverable">
+      <table class="table is-bordered is-striped is-hoverable processed-messages--table">
         <thead>
           <tr>
             <th>Timestamp</th>
-            <th>ShortHash</th>
+            <th>Destination</th>
             <th>Method</th>
-            <th>UriPath</th>
-            <th>RuleProcessingResults</th>
+            <th>Path</th>
+            <th>Rule Processing Results</th>
           </tr>
         </thead>
-        <tbody>
-        {{range .ProcessedMessages}}
-          <tr>
-            <td>{{ .RelativeTimestamp }}</td>
-            <td>{{ .ShortHash }}</td>
-            <td>{{ .Method }}</td>
-            <td>{{ .UriPath }}</td>
-            <td>
-              {{range .RuleProcessingResults}}
-                <span class="tag {{if .Allowed}}is-success{{else}}is-warning{{end}}">
-                  {{.RuleName}}{{if .RuleMessage}}: {{.RuleMessage}}{{end}}
-                </span>
-              {{end}}
-            </td>
-          </tr>
-        {{end}}
+        <tbody id="processed-messages--container">
         </tbody>
-        <tfoot>
-          <tr><td colspan="5">showing {{ len .ProcessedMessages }} messages</td></tr>
-        </tfoot>
       </table>
     </div>
   </body>
