@@ -15,12 +15,12 @@ type COAPMessage struct {
 }
 
 type COAPMessageMetadata struct {
-  SrcIP           string
-  DstIP           string
-  SrcPort         int
-  DstPort         int
-  CoapMsgToken    string
-  AuthOptionValue *string
+  SrcIP             string
+  DstIP             string
+  SrcPort           int
+  DstPort           int
+  CoapMsgToken      string
+  AuthenticityToken *string
 }
 
 func (m *COAPMessageMetadata) Hash() string {

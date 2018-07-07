@@ -22,12 +22,12 @@ func extractCOAPMetadata(ipv6Layer *layers.IPv6, udpLayer *layers.UDP, message c
 
   coapMsgToken := hex.EncodeToString(message.GetToken())
 
-  authOption := message.GetOption(65000)
-  var authOptionValue *string
-  if(authOption != nil) {
-    if byteValue, ok := authOption.GetValue().([]byte); ok {
+  authTokenOption := message.GetOption(65000)
+  var authTokenValue *string
+  if(authTokenOption != nil) {
+    if byteValue, ok := authTokenOption.GetValue().([]byte); ok {
       stringValue := string(byteValue)
-      authOptionValue = &stringValue
+      authTokenValue = &stringValue
     }
   }
 
@@ -37,6 +37,6 @@ func extractCOAPMetadata(ipv6Layer *layers.IPv6, udpLayer *layers.UDP, message c
     srcPort,
     dstPort,
     coapMsgToken,
-    authOptionValue,
+    authTokenValue,
   }, nil
 }

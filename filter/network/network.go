@@ -23,51 +23,14 @@ func ReinjectPackets(outgoingMessages <-chan *types.COAPMessage, rawSocketFd int
 }
 
 func ReinjectPacket(rawSocketFd int, message *types.COAPMessage) error {
-  buf := gopacket.NewSerializeBuffer()
-  opts := gopacket.SerializeOptions{FixLengths: true, ComputeChecksums: true}
-
-  messageBytes, err := canopus.MessageToBytes(message.Message)
+  bytes, err := SerializeMessage(message, true)
   if err != nil {
-    return fmt.Errorf("Error serializing COAP message: %v", err)
-  }
-  bufBytes, err := buf.PrependBytes(len(messageBytes))
-  if err != nil {
-    return fmt.Errorf("Error prepending bytes to buffer: %v", err)
-  }
-  copy(bufBytes, messageBytes)
-
-  if udpLayer, ok := message.TransportLayer.(*layers.UDP); ok {
-    udpLayer.SetNetworkLayerForChecksum(message.NetworkLayer)
-    err = udpLayer.SerializeTo(buf, opts)
-    if err != nil {
-      return fmt.Errorf("Error serializing TransportLayer: %v", err)
-    }
-  } else {
-    return errors.New("Can not use TransportLayer as UDP layer")
-  }
-
-  if ipv6Layer, ok := message.NetworkLayer.(*layers.IPv6); ok {
-    err = ipv6Layer.SerializeTo(buf, opts)
-    if err != nil {
-      return fmt.Errorf("Error serializing NetworkLayer: %v", err)
-    }
-  } else {
-    return errors.New("Can not use NetworkLayer as IPv6 layer")
+    return err
   }
 
   loopbackIface, err := net.InterfaceByName("lo")
   if(err != nil) {
     return errors.New("unable to find loopback interface")
-  }
-  nullMAC, _ := net.ParseMAC("00:00:00:00:00:00")
-  ethernetFrame := layers.Ethernet{
-    SrcMAC: nullMAC,
-    DstMAC: nullMAC,
-    EthernetType: 0x86DD, // IPv6
-  }
-  err = ethernetFrame.SerializeTo(buf, opts)
-  if(err != nil) {
-    return err
   }
 
   var addr syscall.SockaddrLinklayer
@@ -76,10 +39,60 @@ func ReinjectPacket(rawSocketFd int, message *types.COAPMessage) error {
   addr.Hatype = syscall.ARPHRD_LOOPBACK
 
   // Send the packet
-  err = syscall.Sendto(rawSocketFd, buf.Bytes(), 0, &addr)
+  err = syscall.Sendto(rawSocketFd, *bytes, 0, &addr)
 
   if(err != nil) {
     return fmt.Errorf("Error sending ethernet packet: %v", err)
   }
   return nil
+}
+
+func SerializeMessage(message *types.COAPMessage, withEthernetFrame bool) (*[]byte, error) {
+  buf := gopacket.NewSerializeBuffer()
+  opts := gopacket.SerializeOptions{FixLengths: true, ComputeChecksums: true}
+
+  messageBytes, err := canopus.MessageToBytes(message.Message)
+  if err != nil {
+    return nil, fmt.Errorf("Error serializing COAP message: %v", err)
+  }
+  bufBytes, err := buf.PrependBytes(len(messageBytes))
+  if err != nil {
+    return nil, fmt.Errorf("Error prepending bytes to buffer: %v", err)
+  }
+  copy(bufBytes, messageBytes)
+
+  if udpLayer, ok := message.TransportLayer.(*layers.UDP); ok {
+    udpLayer.SetNetworkLayerForChecksum(message.NetworkLayer)
+    err = udpLayer.SerializeTo(buf, opts)
+    if err != nil {
+      return nil, fmt.Errorf("Error serializing TransportLayer: %v", err)
+    }
+  } else {
+    return nil, errors.New("Can not use TransportLayer as UDP layer")
+  }
+
+  if ipv6Layer, ok := message.NetworkLayer.(*layers.IPv6); ok {
+    err = ipv6Layer.SerializeTo(buf, opts)
+    if err != nil {
+      return nil, fmt.Errorf("Error serializing NetworkLayer: %v", err)
+    }
+  } else {
+    return nil, errors.New("Can not use NetworkLayer as IPv6 layer")
+  }
+
+  if withEthernetFrame {
+    nullMAC, _ := net.ParseMAC("00:00:00:00:00:00")
+    ethernetFrame := layers.Ethernet{
+      SrcMAC: nullMAC,
+      DstMAC: nullMAC,
+      EthernetType: 0x86DD, // IPv6
+    }
+    err = ethernetFrame.SerializeTo(buf, opts)
+    if(err != nil) {
+      return nil, err
+    }
+  }
+
+  packetBytes := buf.Bytes()
+  return &packetBytes, nil
 }

@@ -1,9 +1,10 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"os"
-	"sync"
 	"syscall"
 
 	"github.com/AkihiroSuda/go-netfilter-queue"
@@ -15,13 +16,27 @@ import (
 	"gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/web"
 )
 
+func generateAuthenticityToken() (*string, error) {
+	bytes := make([]byte, 16)
+	if _, err := rand.Read(bytes); err != nil {
+		return nil, err
+	}
+	token := hex.EncodeToString(bytes)
+	return &token, nil
+}
+
 func main() {
 	var err error
+	authenticityToken, err := generateAuthenticityToken()
+	if err != nil {
+		fmt.Printf("Error generating authenticityToken: %v", err)
+		return
+	}
 
 	fd, err:= syscall.Socket(syscall.AF_PACKET, syscall.SOCK_RAW, syscall.ETH_P_ALL)
 	if (err != nil) {
 		fmt.Println("Error: " + err.Error())
-		return;
+		return
 	}
 	fmt.Println("Obtained fd ", fd)
 	defer syscall.Close(fd)
@@ -37,11 +52,9 @@ func main() {
 	incomingMessages := make(chan *types.COAPMessage, 10)
 	processedMessages := make(chan types.ProcessedMessage, 10)
 	outgoingMessages := make(chan *types.COAPMessage, 10)
-	whitelistedMessageHashes := make(map[string]bool)
-	var whitelistedMessagesHashesMutex sync.RWMutex
 
 	go func() {
-		pipeline.Consume(incomingMessages, processedMessages, outgoingMessages, whitelistedMessageHashes, whitelistedMessagesHashesMutex)
+		pipeline.Consume(incomingMessages, processedMessages, outgoingMessages, *authenticityToken)
 	}()
 
 	go func() {
@@ -56,24 +69,31 @@ func main() {
 		select {
 		case p := <-packets:
 			verdict := netfilter.NF_DROP
+			var packet *[]byte
 
 			message, err := parser.ParseCOAPMessageFromPacket(p.Packet)
 			if(err != nil) {
-				fmt.Printf("Error parsing packet: %v", err)
+				fmt.Printf("Error parsing packet: %v\n", err)
 				continue
 			}
 
-			whitelistedMessagesHashesMutex.RLock()
-			if val, ok := whitelistedMessageHashes[message.Metadata.Hash()]; ok {
-				if val == true {
+			if message.Metadata.AuthenticityToken != nil && *message.Metadata.AuthenticityToken == *authenticityToken {
+				message.Message.RemoveOptions(65000)
+				packet, err = network.SerializeMessage(message, false)
+				if err != nil {
+					fmt.Printf("Error serializing packet: %v\n", err)
+				} else {
 					verdict = netfilter.NF_ACCEPT
 				}
 			} else {
 				incomingMessages <- message
 			}
-			whitelistedMessagesHashesMutex.RUnlock()
 
-			p.SetVerdict(verdict)
+			if packet != nil {
+				p.SetVerdictWithPacket(verdict, *packet)
+			} else {
+				p.SetVerdict(verdict)
+			}
 		}
 	}
 }
