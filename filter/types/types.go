@@ -9,16 +9,18 @@ import (
 
 type COAPMessage struct {
   Metadata COAPMessageMetadata
-  Packet gopacket.Packet
+  NetworkLayer gopacket.NetworkLayer
+  TransportLayer gopacket.TransportLayer
   Message canopus.Message
 }
 
 type COAPMessageMetadata struct {
-  SrcIP        string
-  DstIP        string
-  SrcPort      int
-  DstPort      int
-  CoapMsgToken string
+  SrcIP           string
+  DstIP           string
+  SrcPort         int
+  DstPort         int
+  CoapMsgToken    string
+  AuthOptionValue *string
 }
 
 func (m *COAPMessageMetadata) Hash() string {

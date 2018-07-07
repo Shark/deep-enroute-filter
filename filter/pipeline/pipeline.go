@@ -5,11 +5,9 @@ import (
 
   "gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/rules"
   "gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/types"
-
-  "github.com/google/gopacket"
 )
 
-func Consume(incomingMessages <-chan *types.COAPMessage, processedMessages chan<- types.ProcessedMessage, outgoingPackets chan<- gopacket.Packet, whitelistedMessageHashes map[string]bool, whitelistedMessagesHashesMutex sync.RWMutex) {
+func Consume(incomingMessages <-chan *types.COAPMessage, processedMessages chan<- types.ProcessedMessage, outgoingMessages chan<- *types.COAPMessage, whitelistedMessageHashes map[string]bool, whitelistedMessagesHashesMutex sync.RWMutex) {
   for message := range incomingMessages {
     packetHash := message.Metadata.Hash()
 
@@ -22,6 +20,6 @@ func Consume(incomingMessages <-chan *types.COAPMessage, processedMessages chan<
 
     processedMessages <- types.ProcessedMessage{message, []types.RuleProcessingResult{result}}
 
-    outgoingPackets <- message.Packet
+    outgoingMessages <- message
   }
 }

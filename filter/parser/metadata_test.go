@@ -5,6 +5,8 @@ import (
   "reflect"
 	"testing"
 
+  "gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/types"
+
   "github.com/google/gopacket"
   "github.com/google/gopacket/layers"
 )
@@ -16,20 +18,23 @@ func TestExtractCOAPMetadata(t *testing.T) {
 		t.Error("Byte decoding failed")
 	}
   packet := gopacket.NewPacket(packetBytes, layers.LayerTypeIPv6, gopacket.Default)
+  ipv6Layer := packet.Layer(layers.LayerTypeIPv6).(*layers.IPv6)
+  udpLayer := packet.Layer(layers.LayerTypeUDP).(*layers.UDP)
   message, _ := parsePacketPayloadAsCOAPMessage(packet)
 
-  metadata, err := extractCOAPMetadata(packet, message)
+  metadata, err := extractCOAPMetadata(ipv6Layer, udpLayer, message)
 
   if(err != nil) {
     t.Errorf("extractCOAPMetadata failed: %v", err)
   }
 
-  expected := &COAPMessageMetadata{
+  expected := &types.COAPMessageMetadata{
     "fd1b:2211:c9b6:0:54a7:8239:fdb8:f6c7",
     "fd00::ff:fe00:53c0",
     35428,
     5683,
     "e91f89b5",
+    nil,
   }
 
   if(!reflect.DeepEqual(metadata, expected)) {
@@ -38,12 +43,13 @@ func TestExtractCOAPMetadata(t *testing.T) {
 }
 
 func TestHashCOAPMetadata(t *testing.T) {
-  metadata := &COAPMessageMetadata{
+  metadata := &types.COAPMessageMetadata{
     "fd1b:2211:c9b6:0:54a7:8239:fdb8:f6c7",
     "fd00::ff:fe00:53c0",
     35428,
     5683,
     "e91f89b5",
+    nil,
   }
 
   hash := metadata.Hash()

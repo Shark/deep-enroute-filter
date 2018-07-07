@@ -27,29 +27,34 @@ func parsePacketPayloadAsCOAPMessage(packet gopacket.Packet) (message canopus.Me
 }
 
 func ParseCOAPMessageFromPacket(packet gopacket.Packet) (*types.COAPMessage, error) {
-  if udpLayer, ok := packet.Layer(layers.LayerTypeUDP).(*layers.UDP); ok {
-    dstPort := int(udpLayer.DstPort)
+  if ipv6Layer, ok := packet.Layer(layers.LayerTypeIPv6).(*layers.IPv6); ok {
+    if udpLayer, ok := packet.Layer(layers.LayerTypeUDP).(*layers.UDP); ok {
+      dstPort := int(udpLayer.DstPort)
 
-    if(dstPort != 5683) {
-      return nil, errors.New("Packet is not a COAP message")
+      if(dstPort != 5683) {
+        return nil, errors.New("Packet is not a COAP message")
+      }
+
+      coapMsg, err := parsePacketPayloadAsCOAPMessage(packet)
+      if(err != nil) {
+        return nil, fmt.Errorf("Failed to parse COAP message: %v", err)
+      }
+
+      metadata, err := extractCOAPMetadata(ipv6Layer, udpLayer, coapMsg)
+      if(err != nil) {
+        return nil, fmt.Errorf("Failed to extract COAP metadata: %v", err)
+      }
+
+      return &types.COAPMessage{
+        *metadata,
+        ipv6Layer,
+        udpLayer,
+        coapMsg,
+      }, nil
+    } else {
+      return nil, errors.New("Packet does not have UDP layer")
     }
-
-    coapMsg, err := parsePacketPayloadAsCOAPMessage(packet)
-    if(err != nil) {
-      return nil, fmt.Errorf("Failed to parse COAP message: %v", err)
-    }
-
-    metadata, err := extractCOAPMetadata(packet, coapMsg)
-    if(err != nil) {
-      return nil, fmt.Errorf("Failed to extract COAP metadata: %v", err)
-    }
-
-    return &types.COAPMessage{
-      *metadata,
-      packet,
-      coapMsg,
-    }, nil
   } else {
-    return nil, errors.New("Packet does not have IPv6 or UDP layer")
+    return nil, errors.New("Packet does not have IPv6 layer")
   }
 }

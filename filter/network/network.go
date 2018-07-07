@@ -6,12 +6,15 @@ import (
   "net"
   "syscall"
 
+  "gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/types"
+
+  "github.com/zubairhamed/canopus"
   "github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 )
 
-func ReinjectPackets(outgoingPackets <-chan gopacket.Packet, rawSocketFd int) {
-  for packet := range outgoingPackets {
+func ReinjectPackets(outgoingMessages <-chan *types.COAPMessage, rawSocketFd int) {
+  for packet := range outgoingMessages {
     err := ReinjectPacket(rawSocketFd, packet)
     if err != nil {
       fmt.Printf("Error reinjecting packet: %v", err)
@@ -19,36 +22,37 @@ func ReinjectPackets(outgoingPackets <-chan gopacket.Packet, rawSocketFd int) {
   }
 }
 
-func ReinjectPacket(rawSocketFd int, packet gopacket.Packet) error {
+func ReinjectPacket(rawSocketFd int, message *types.COAPMessage) error {
   buf := gopacket.NewSerializeBuffer()
   opts := gopacket.SerializeOptions{FixLengths: true, ComputeChecksums: true}
 
-  if payloadLayer, ok := packet.ApplicationLayer().(*gopacket.Payload); ok {
-    err := payloadLayer.SerializeTo(buf, opts)
-    if(err != nil) {
-      return err;
+  messageBytes, err := canopus.MessageToBytes(message.Message)
+  if err != nil {
+    return fmt.Errorf("Error serializing COAP message: %v", err)
+  }
+  bufBytes, err := buf.PrependBytes(len(messageBytes))
+  if err != nil {
+    return fmt.Errorf("Error prepending bytes to buffer: %v", err)
+  }
+  copy(bufBytes, messageBytes)
+
+  if udpLayer, ok := message.TransportLayer.(*layers.UDP); ok {
+    udpLayer.SetNetworkLayerForChecksum(message.NetworkLayer)
+    err = udpLayer.SerializeTo(buf, opts)
+    if err != nil {
+      return fmt.Errorf("Error serializing TransportLayer: %v", err)
     }
   } else {
-    return errors.New("payload layer not found in packet")
+    return errors.New("Can not use TransportLayer as UDP layer")
   }
 
-  if ipv6Layer, ok := packet.NetworkLayer().(*layers.IPv6); ok {
-    if udpLayer, ok := packet.TransportLayer().(*layers.UDP); ok {
-      udpLayer.SetNetworkLayerForChecksum(ipv6Layer)
-      err := udpLayer.SerializeTo(buf, opts)
-      if(err != nil) {
-        return err;
-      }
-    } else {
-      return errors.New("UDP layer not found in packet")
-    }
-
-    err := ipv6Layer.SerializeTo(buf, opts)
-    if(err != nil) {
-      return err;
+  if ipv6Layer, ok := message.NetworkLayer.(*layers.IPv6); ok {
+    err = ipv6Layer.SerializeTo(buf, opts)
+    if err != nil {
+      return fmt.Errorf("Error serializing NetworkLayer: %v", err)
     }
   } else {
-    return errors.New("IPv6 layer not found in packet")
+    return errors.New("Can not use NetworkLayer as IPv6 layer")
   }
 
   loopbackIface, err := net.InterfaceByName("lo")

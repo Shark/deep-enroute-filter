@@ -7,7 +7,6 @@ import (
 	"syscall"
 
 	"github.com/AkihiroSuda/go-netfilter-queue"
-	"github.com/google/gopacket"
 
 	"gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/network"
 	"gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/parser"
@@ -37,16 +36,16 @@ func main() {
 
 	incomingMessages := make(chan *types.COAPMessage, 10)
 	processedMessages := make(chan types.ProcessedMessage, 10)
-	outgoingPackets := make(chan gopacket.Packet, 10)
+	outgoingMessages := make(chan *types.COAPMessage, 10)
 	whitelistedMessageHashes := make(map[string]bool)
 	var whitelistedMessagesHashesMutex sync.RWMutex
 
 	go func() {
-		pipeline.Consume(incomingMessages, processedMessages, outgoingPackets, whitelistedMessageHashes, whitelistedMessagesHashesMutex)
+		pipeline.Consume(incomingMessages, processedMessages, outgoingMessages, whitelistedMessageHashes, whitelistedMessagesHashesMutex)
 	}()
 
 	go func() {
-		network.ReinjectPackets(outgoingPackets, fd)
+		network.ReinjectPackets(outgoingMessages, fd)
 	}()
 
 	go func() {
@@ -60,7 +59,7 @@ func main() {
 
 			message, err := parser.ParseCOAPMessageFromPacket(p.Packet)
 			if(err != nil) {
-				fmt.Println("Error parsing packet: %v", err)
+				fmt.Printf("Error parsing packet: %v", err)
 				continue
 			}
 
