@@ -63,7 +63,7 @@ type webRuleProcessingResult struct {
 }
 
 func websocketHandler(w http.ResponseWriter, r *http.Request) {
-  listener := &listener{source: make(chan types.Event), quit: globalQuit}
+  listener := &listener{source: make(chan types.Event, 10), quit: globalQuit}
   listeners.Push(listener)
 
 	c, err := upgrader.Upgrade(w, r, nil)

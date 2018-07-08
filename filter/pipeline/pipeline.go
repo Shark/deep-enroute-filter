@@ -20,7 +20,7 @@ func (e *ProcessedMessageEvent) Payload() interface{} {
 
 func Consume(incomingMessages <-chan *types.COAPMessage, outgoingMessages chan<- *types.COAPMessage, authenticityToken string, events chan types.Event) {
   methodRule := rules.MethodRule{AllowedMethods: []string{"GET"}}
-  coreRule := core.NewCoreRule()
+  coreRule := core.NewCoreRule(events)
 
   for message := range incomingMessages {
     methodRuleResult := methodRule.Process(message)

@@ -22,7 +22,7 @@
     <div class="container container--main">
       <h1 class="title">Processed Messages</h1>
 
-      <table class="table is-bordered is-striped is-hoverable processed-messages--table">
+      <table class="table is-bordered is-striped is-hoverable data-table">
         <thead>
           <tr>
             <th>Timestamp</th>
@@ -33,6 +33,20 @@
           </tr>
         </thead>
         <tbody id="processed-messages--container">
+        </tbody>
+      </table>
+    </div>
+    <div class="container container--main">
+      <h1 class="title">CoRE Endpoints</h1>
+
+      <table class="table is-bordered is-striped is-hoverable data-table">
+        <thead>
+          <tr>
+            <th>Destination IP</th>
+            <th># Endpoints</th>
+          </tr>
+        </thead>
+        <tbody id="core-endpoints--container">
         </tbody>
       </table>
     </div>

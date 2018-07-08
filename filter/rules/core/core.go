@@ -7,8 +7,21 @@ import (
   "gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/types"
 )
 
+type coreEndpointsEvent struct {
+  endpoints map[string]int
+}
+
+func (e *coreEndpointsEvent) Type() string {
+  return "CoreEndpointsEvent"
+}
+
+func (e *coreEndpointsEvent) Payload() interface{} {
+  return e.endpoints
+}
+
 type CoreRule struct {
   endpoints map[string][]string
+  events chan types.Event
 }
 
 func (c CoreRule) Process(message *types.COAPMessage) types.RuleProcessingResult {
@@ -27,6 +40,12 @@ func (c CoreRule) Process(message *types.COAPMessage) types.RuleProcessingResult
     }
     c.endpoints[message.Metadata.DstIP] = *fetchedEndpoints
     endpoints = *fetchedEndpoints
+
+    endpointsForEvent := make(map[string]int)
+    for dstIP, endpoints := range c.endpoints {
+      endpointsForEvent[dstIP] = len(endpoints)
+    }
+    c.events <- &coreEndpointsEvent{endpointsForEvent}
   }
 
   allowed := false
@@ -56,6 +75,9 @@ func (r CoreRule) Name() string {
   return "CoreRule"
 }
 
-func NewCoreRule() CoreRule {
-  return CoreRule{make(map[string][]string)}
+func NewCoreRule(events chan types.Event) CoreRule {
+  return CoreRule{
+    endpoints: make(map[string][]string),
+    events: events,
+  }
 }

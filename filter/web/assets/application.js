@@ -64,15 +64,27 @@
           return `
             <tr>
               <td class="timestamp" data-value="${message.Timestamp}"></td>
-              <td class="processed-messages--code-column"><pre>${message.Destination}</pre></td>
-              <td class="processed-messages--code-column"><pre>${message.Method}</pre></td>
-              <td class="processed-messages--code-column"><pre>${message.Path}</pre></td>
+              <td><pre>${message.Destination}</pre></td>
+              <td><pre>${message.Method}</pre></td>
+              <td><pre>${message.Path}</pre></td>
               <td>${ruleProcessingResultMarkup}</td>
             </tr>
           `;
         }).join('\n');
 
         updateTimestamps();
+      } else if(data.Type === 'CoreEndpointsEvent') {
+        let container = document.querySelector('#core-endpoints--container')
+        var rowMarkup = []
+        for(var key of Object.keys(data.Payload)) {
+          rowMarkup.push(`
+            <tr>
+              <td><pre>${key}</pre></td>
+              <td>${data.Payload[key]}</td>
+            </tr>
+          `)
+        }
+        container.innerHTML = rowMarkup.join('\n');
       }
        // {"Type":"ProcessedMessages","Payload":[{"Timestamp":"2018-07-07T15:30:07.11355415+02:00","Method":"GET","Path":"/basic","RuleProcessingResults":[{"Allowed":true,"RuleName":"MethodRule","RuleMessage":null}]}]}
 

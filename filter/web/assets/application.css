@@ -2,11 +2,11 @@
   margin-top: 2em;
 }
 
-.processed-messages--table {
+.data-table {
   width: 100%;
 }
 
-.processed-messages--table pre {
+.data-table pre {
   background-color: transparent;
   padding: 0;
 }
