@@ -19,6 +19,7 @@ type COAPMessageMetadata struct {
   DstIP             string
   SrcPort           int
   DstPort           int
+  UriPath           string
   CoapMsgToken      string
   AuthenticityToken *string
 }

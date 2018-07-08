@@ -36,6 +36,7 @@ func extractCOAPMetadata(ipv6Layer *layers.IPv6, udpLayer *layers.UDP, message c
     dstIP,
     srcPort,
     dstPort,
+    message.GetURIPath(),
     coapMsgToken,
     authTokenValue,
   }, nil

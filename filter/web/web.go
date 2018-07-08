@@ -133,7 +133,7 @@ func ListenAndServe(events <-chan types.Event) {
             time.Now(),
             processedMessage.Message.Metadata.DstIP,
             canopus.MethodString(processedMessage.Message.Message.GetCode()),
-            processedMessage.Message.Message.GetURIPath(),
+            processedMessage.Message.Metadata.UriPath,
             processingResults,
           }}, processedMessages...)
         }

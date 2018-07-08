@@ -33,6 +33,7 @@ func TestExtractCOAPMetadata(t *testing.T) {
     "fd00::ff:fe00:53c0",
     35428,
     5683,
+    "/.well-known/core",
     "e91f89b5",
     nil,
   }
@@ -48,6 +49,7 @@ func TestHashCOAPMetadata(t *testing.T) {
     "fd00::ff:fe00:53c0",
     35428,
     5683,
+    "/.well-known/core",
     "e91f89b5",
     nil,
   }
