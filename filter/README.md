@@ -16,3 +16,10 @@ Add the following iptables rule to intercept traffic:
 ```
 ip6tables -t raw -I PREROUTING -p udp --dport 5683 -j NFQUEUE --queue-num 0
 ```
+
+## Demo
+
+```
+echo 'content' | coap post coap://[fdf0:a23f:8cae:5b97::2]/basic
+coap get coap://[fdf0:a23f:8cae:5b97::2]/nonexisting
+```

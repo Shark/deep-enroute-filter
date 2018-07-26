@@ -7,6 +7,15 @@
   revision = "28613130fef610df5fd4942e1ad89bb7d12b86bd"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/Clever/leakybucket"
+  packages = [
+    ".",
+    "memory"
+  ]
+  revision = "863be11097c98450ac1222804c301cd0ea915f57"
+
+[[projects]]
   name = "github.com/gobuffalo/packr"
   packages = ["."]
   revision = "bd47f2894846e32edcf9aa37290fef76c327883f"
@@ -41,6 +50,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b2914430171b66a62475763176006563df919e72230729a9171b2756a1086721"
+  inputs-digest = "e9d2a8cdb3b951c94ef842b89a1e449b49e8d7f4e202a0f900c3a0ecf3523c99"
   solver-name = "gps-cdcl"
   solver-version = 1

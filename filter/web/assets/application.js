@@ -14,7 +14,15 @@
   function updateTimestamps() {
     for(var timestamp of document.querySelectorAll('.timestamp')) {
       let secondsAgo = Math.floor((Date.now() - Date.parse(timestamp.dataset.value))/1000);
-      timestamp.innerHTML = `${secondsAgo} seconds ago`;
+      if(secondsAgo >= 0) {
+        if(timestamp.dataset.hideIfPast) {
+          timestamp.innerHTML = '–';
+        } else {
+          timestamp.innerHTML = `${secondsAgo} seconds ago`;
+        }
+      } else {
+        timestamp.innerHTML = `in ${secondsAgo*(-1)} seconds`;
+      }
     }
   }
   setInterval(updateTimestamps, 5000);
@@ -85,6 +93,21 @@
           `)
         }
         container.innerHTML = rowMarkup.join('\n');
+      } else if(data.Type === 'RateLimitStateEvent') {
+        let container = document.querySelector('#rate-limit-state--container')
+        var rowMarkup = []
+        for(var bucket of data.Payload) {
+          rowMarkup.push(`
+            <tr>
+              <td><pre>${bucket.SrcIP}</pre></td>
+              <td><pre>${bucket.DstIP}</pre></td>
+              <td>${bucket.BucketRemaining}/${bucket.BucketCapacity}</td>
+              <td class="timestamp" data-value="${bucket.BucketReset}" data-hide-if-past="true"></td>
+            </tr>
+          `)
+        }
+        container.innerHTML = rowMarkup.join('\n');
+        updateTimestamps();
       }
        // {"Type":"ProcessedMessages","Payload":[{"Timestamp":"2018-07-07T15:30:07.11355415+02:00","Method":"GET","Path":"/basic","RuleProcessingResults":[{"Allowed":true,"RuleName":"MethodRule","RuleMessage":null}]}]}
 

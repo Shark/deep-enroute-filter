@@ -19,36 +19,56 @@
         </div>
       </div>
     </section>
-    <div class="container container--main">
-      <h1 class="title">Processed Messages</h1>
+    <div class="columns columns--root">
+      <div class="column container--main">
+        <h1 class="title">CoRE Endpoints</h1>
 
-      <table class="table is-bordered is-striped is-hoverable data-table">
-        <thead>
-          <tr>
-            <th>Timestamp</th>
-            <th>Destination</th>
-            <th>Method</th>
-            <th>Path</th>
-            <th>Rule Processing Results</th>
-          </tr>
-        </thead>
-        <tbody id="processed-messages--container">
-        </tbody>
-      </table>
+        <table class="table is-bordered is-striped is-hoverable data-table">
+          <thead>
+            <tr>
+              <th>Destination IP</th>
+              <th># Endpoints</th>
+            </tr>
+          </thead>
+          <tbody id="core-endpoints--container">
+          </tbody>
+        </table>
+      </div>
+      <div class="column container--main">
+        <h1 class="title">Rate Limit State</h1>
+
+        <table class="table is-bordered is-striped is-hoverable data-table">
+          <thead>
+            <tr>
+              <th>Source IP</th>
+              <th>Destination IP</th>
+              <th>Remaining</th>
+              <th>Reset in</th>
+            </tr>
+          </thead>
+          <tbody id="rate-limit-state--container">
+          </tbody>
+        </table>
+      </div>
     </div>
-    <div class="container container--main">
-      <h1 class="title">CoRE Endpoints</h1>
+    <div class="columns columns--root">
+      <div class="column container--main">
+        <h1 class="title">Processed Messages</h1>
 
-      <table class="table is-bordered is-striped is-hoverable data-table">
-        <thead>
-          <tr>
-            <th>Destination IP</th>
-            <th># Endpoints</th>
-          </tr>
-        </thead>
-        <tbody id="core-endpoints--container">
-        </tbody>
-      </table>
+        <table class="table is-bordered is-striped is-hoverable data-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Destination</th>
+              <th>Method</th>
+              <th>Path</th>
+              <th>Rule Processing Results</th>
+            </tr>
+          </thead>
+          <tbody id="processed-messages--container">
+          </tbody>
+        </table>
+      </div>
     </div>
   </body>
 </html>

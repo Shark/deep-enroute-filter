@@ -2,6 +2,10 @@
   margin-top: 2em;
 }
 
+.columns--root {
+  margin: 0 1em;
+}
+
 .data-table {
   width: 100%;
 }
