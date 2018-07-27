@@ -3,6 +3,7 @@ package core
 import (
   "fmt"
   "strings"
+  "time"
 
   "gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/types"
 )
@@ -41,11 +42,7 @@ func (c CoreRule) Process(message *types.COAPMessage) types.RuleProcessingResult
     c.endpoints[message.Metadata.DstIP] = *fetchedEndpoints
     endpoints = *fetchedEndpoints
 
-    endpointsForEvent := make(map[string]int)
-    for dstIP, endpoints := range c.endpoints {
-      endpointsForEvent[dstIP] = len(endpoints)
-    }
-    c.events <- &coreEndpointsEvent{endpointsForEvent}
+
   }
 
   allowed := false
@@ -71,13 +68,30 @@ func (c CoreRule) Process(message *types.COAPMessage) types.RuleProcessingResult
   }
 }
 
+func (c CoreRule) publishState() {
+  endpointsForEvent := make(map[string]int)
+  for dstIP, endpoints := range c.endpoints {
+    endpointsForEvent[dstIP] = len(endpoints)
+  }
+  c.events <- &coreEndpointsEvent{endpointsForEvent}
+}
+
 func (r CoreRule) Name() string {
   return "CoreRule"
 }
 
-func NewCoreRule(events chan types.Event) CoreRule {
-  return CoreRule{
+func NewCoreRule(events chan types.Event) *CoreRule {
+  coreRule := CoreRule{
     endpoints: make(map[string][]string),
     events: events,
   }
+
+  go func() {
+    ticker := time.NewTicker(2 * time.Second)
+    for _ = range ticker.C {
+      coreRule.publishState()
+    }
+  }()
+
+  return &coreRule
 }
