@@ -1,5 +1,9 @@
 version: '2.4'
 services:
+  filter:
+    image: sh4rk/iotsec-enroute-filtering
+    build:
+      context: ./filter
   coap-server:
     image: sh4rk/iotsec-enroute-filtering-coap
     build:

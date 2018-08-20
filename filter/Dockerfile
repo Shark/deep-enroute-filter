@@ -6,11 +6,11 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/* \
  && curl -sSL -o /usr/local/bin/dep https://github.com/golang/dep/releases/download/v0.4.1/dep-linux-amd64 \
  && chmod +x /usr/local/bin/dep \
- && mkdir -p /go/src/gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering
+ && mkdir -p /go/src/gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter
 
-WORKDIR /go/src/gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering
+WORKDIR /go/src/gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter
 
-COPY Gopkg.lock Gopkg.toml /go/src/gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/
+COPY Gopkg.lock Gopkg.toml /go/src/gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/
 RUN dep ensure -vendor-only
 
 RUN cd vendor/github.com/zubairhamed/canopus \
@@ -21,4 +21,4 @@ RUN cd vendor/github.com/zubairhamed/canopus \
 
 COPY . .
 RUN go build .
-CMD ["/go/src/gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter"]
+CMD ["/go/src/gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/filter"]
