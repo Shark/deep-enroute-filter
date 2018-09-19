@@ -1,0 +1,10 @@
+[Unit]
+Description=COAP Server
+
+[Service]
+Requires=networking.service
+ExecStart=/usr/bin/python server.py
+WorkingDirectory=/usr/src/app
+
+[Install]
+WantedBy=multi-user.target

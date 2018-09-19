@@ -1,0 +1,9 @@
+[Unit]
+Description=CoAP En-Route Filter
+
+[Service]
+Requires=networking.service
+ExecStart=/usr/local/bin/filter
+
+[Install]
+WantedBy=multi-user.target
