@@ -3,7 +3,7 @@ package types
 import (
   "fmt"
   "crypto/sha256"
-  "github.com/zubairhamed/canopus"
+  "github.com/Shark/canopus"
   "github.com/google/gopacket"
 )
 

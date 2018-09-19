@@ -2,54 +2,77 @@
 
 
 [[projects]]
+  digest = "1:a6863b060ac94123cebb2c7402036fce543d942e29c54b4b831b6737c1359aa1"
   name = "github.com/AkihiroSuda/go-netfilter-queue"
   packages = ["."]
+  pruneopts = "UT"
   revision = "28613130fef610df5fd4942e1ad89bb7d12b86bd"
 
 [[projects]]
   branch = "master"
+  digest = "1:53bdc10a12897c4258b8eb0709797ad57adeb31060373755d8650309a2c105d3"
   name = "github.com/Clever/leakybucket"
   packages = [
     ".",
-    "memory"
+    "memory",
   ]
-  revision = "863be11097c98450ac1222804c301cd0ea915f57"
+  pruneopts = "UT"
+  revision = "9fe347fb61ffdf47856c19355d96c4ba2f69e971"
 
 [[projects]]
+  digest = "1:d4390c5468adec84c9f7982c19406f47cdd5ff6089a123ecdb26c826ddc2597c"
+  name = "github.com/Shark/canopus"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "6fcedfe01fda450cd0c8982df80b148db7daac06"
+
+[[projects]]
+  digest = "1:f45caa3c5c4541c3a73b9fa2b38db97fcbda57618eaaaf45dd5c728362ad8f09"
   name = "github.com/gobuffalo/packr"
   packages = ["."]
-  revision = "bd47f2894846e32edcf9aa37290fef76c327883f"
-  version = "v1.11.1"
+  pruneopts = "UT"
+  revision = "6c8156ee36301dd007342e79d81c99e7a7834337"
+  version = "v1.13.5"
 
 [[projects]]
+  digest = "1:f4a5cb1ae095b963754584170d952558d3d123f486405bad52d279daa417d67b"
   name = "github.com/google/gopacket"
   packages = [
     ".",
-    "layers"
+    "layers",
   ]
+  pruneopts = "UT"
   revision = "11c65f1ca9081dfea43b4f9643f5c155583b73ba"
   version = "v1.1.14"
 
 [[projects]]
+  digest = "1:7b5c6e2eeaa9ae5907c391a91c132abfd5c9e8a784a341b5625e750c67e6825d"
   name = "github.com/gorilla/websocket"
   packages = ["."]
-  revision = "ea4d1f681babbce9545c9c5f3d5194a789c89f5b"
-  version = "v1.2.0"
+  pruneopts = "UT"
+  revision = "66b9c49e59c6c48f0ffce28c2d8b8a5678502c6d"
+  version = "v1.4.0"
 
 [[projects]]
+  digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
   name = "github.com/pkg/errors"
   packages = ["."]
+  pruneopts = "UT"
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
   version = "v0.8.0"
-
-[[projects]]
-  name = "github.com/zubairhamed/canopus"
-  packages = ["."]
-  revision = "e374f5b1a0f335982a91a13b396504c4e1be4961"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e9d2a8cdb3b951c94ef842b89a1e449b49e8d7f4e202a0f900c3a0ecf3523c99"
+  input-imports = [
+    "github.com/AkihiroSuda/go-netfilter-queue",
+    "github.com/Clever/leakybucket",
+    "github.com/Clever/leakybucket/memory",
+    "github.com/Shark/canopus",
+    "github.com/gobuffalo/packr",
+    "github.com/google/gopacket",
+    "github.com/google/gopacket/layers",
+    "github.com/gorilla/websocket",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1

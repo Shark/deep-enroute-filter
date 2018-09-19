@@ -10,7 +10,7 @@ import (
 
   "gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/types"
 
-  "github.com/zubairhamed/canopus"
+  "github.com/Shark/canopus"
   "github.com/gobuffalo/packr"
   "github.com/gorilla/websocket"
 )

@@ -7,7 +7,7 @@ import (
   "gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/types"
 
   "github.com/google/gopacket/layers"
-  "github.com/zubairhamed/canopus"
+  "github.com/Shark/canopus"
 )
 
 func extractCOAPMetadata(ipv6Layer *layers.IPv6, udpLayer *layers.UDP, message canopus.Message) (metadata *types.COAPMessageMetadata, err error) {

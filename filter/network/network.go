@@ -8,7 +8,7 @@ import (
 
   "gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/types"
 
-  "github.com/zubairhamed/canopus"
+  "github.com/Shark/canopus"
   "github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 )

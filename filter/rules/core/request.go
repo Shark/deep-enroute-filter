@@ -3,7 +3,7 @@ package core
 import (
   "fmt"
 
-  "github.com/zubairhamed/canopus"
+  "github.com/Shark/canopus"
 )
 
 func fetchCore(dstIP string) (*[]string, error) {

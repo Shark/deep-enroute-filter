@@ -8,7 +8,7 @@ import (
 
   "github.com/google/gopacket"
   "github.com/google/gopacket/layers"
-  "github.com/zubairhamed/canopus"
+  "github.com/Shark/canopus"
 )
 
 func parsePacketPayloadAsCOAPMessage(packet gopacket.Packet) (message canopus.Message, err error) {

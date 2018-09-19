@@ -34,10 +34,6 @@
   revision = "28613130fef610df5fd4942e1ad89bb7d12b86bd"
 
 [[constraint]]
-  name = "github.com/zubairhamed/canopus"
-  revision = "e374f5b1a0f335982a91a13b396504c4e1be4961"
-
-[[constraint]]
   branch = "master"
   name = "golang.org/x/net"
 
@@ -52,3 +48,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/Clever/leakybucket"
+
+[[constraint]]
+  name = "github.com/Shark/canopus"
+  revision = "6fcedfe01fda450cd0c8982df80b148db7daac06"

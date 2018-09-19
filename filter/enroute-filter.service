@@ -4,7 +4,7 @@ Description=CoAP En-Route Filter
 [Service]
 Requires=networking.service
 ExecStartPre=/sbin/ip6tables -t raw -I PREROUTING -p udp --dport 5683 -j NFQUEUE --queue-num 0
-ExecStart=/usr/local/bin/filter
+ExecStart=/usr/bin/enroute-filter
 ExecStopPost=/sbin/ip6tables -t raw -D PREROUTING -p udp --dport 5683 -j NFQUEUE --queue-num 0
 
 [Install]

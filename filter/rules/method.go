@@ -5,7 +5,7 @@ import (
 
   "gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/types"
 
-  "github.com/zubairhamed/canopus"
+  "github.com/Shark/canopus"
 )
 
 type MethodRule struct {

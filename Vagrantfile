@@ -56,12 +56,12 @@ EOF
 
       cd ~/go/src/gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter
       go build .
-      sudo cp filter /usr/local/bin
+      sudo cp filter /usr/bin/enroute-filter
 
-      sudo cp filter.service /etc/systemd/system
+      sudo cp enroute-filter.service /etc/systemd/system
       sudo systemctl daemon-reload
-      sudo systemctl enable filter
-      sudo systemctl start filter
+      sudo systemctl enable enroute-filter
+      sudo systemctl start enroute-filter
     SHELL
   end
 
