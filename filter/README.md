@@ -22,3 +22,18 @@ $ coap get coap://[fdf0:a23f:8cae:5b97::2]/basic
 ```
 
 You should now see that the request has been processed in the web interface.
+
+## Build a Debian package
+
+```
+apt-get update
+apt-get -y --no-install-recommends install libnetfilter-queue-dev git build-essential dh-make devscripts
+# in the same directory as build-dev.sh
+git clone git@gitlab.hpi.de:felix.seidel/iotsec-enroute-filtering.git'
+export ARCH="arm64|armv6l|amd64"
+export DEBEMAIL="an@email.invalid"
+export DEBFULLNAME="Your Name"
+./build-deb.sh
+```
+
+When the script finishes, a `*.deb` package will be created in the same directory.
