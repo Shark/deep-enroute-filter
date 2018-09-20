@@ -26,13 +26,10 @@ You should now see that the request has been processed in the web interface.
 ## Build a Debian package
 
 ```
-apt-get update
-apt-get -y --no-install-recommends install libnetfilter-queue-dev git build-essential dh-make devscripts
-# in the same directory as build-dev.sh
-git clone git@gitlab.hpi.de:felix.seidel/iotsec-enroute-filtering.git'
-export ARCH="arm64|armv6l|amd64"
-export DEBEMAIL="an@email.invalid"
-export DEBFULLNAME="Your Name"
+sudo apt-get update
+sudo apt-get -y --no-install-recommends install libnetfilter-queue-dev git build-essential dh-make devscripts
+git clone git@gitlab.hpi.de:felix.seidel/iotsec-enroute-filtering.git
+cd iotsec-enroute-filtering
 ./build-deb.sh
 ```
 

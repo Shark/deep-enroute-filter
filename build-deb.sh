@@ -14,17 +14,18 @@ check_pkg() {
 }
 
 build() {
-  export PATH=$PATH:"$DIR/go/bin":"$DIR/gopath/bin" GOPATH="$DIR/gopath"
+  export PATH=$PATH:"$DIR/_build/go/bin":"$DIR/_build/gopath/bin" GOPATH="$DIR/_build/gopath"
 
-  if [[ ! -d "$DIR/go" ]]; then
-    curl -sSL -o "$DIR/go.tar.gz" "https://dl.google.com/go/go1.11.linux-$ARCH.tar.gz"
-    tar -C "$DIR/" -xf "$DIR/go.tar.gz"
+  if [[ ! -d "$DIR/_build/go" ]]; then
+    curl -sSL -o "$DIR/_build/go.tar.gz" "https://dl.google.com/go/go1.11.linux-$ARCH.tar.gz"
+    tar -C "$DIR/_build/" -xf "$DIR/_build/go.tar.gz"
     go get -u github.com/golang/dep/cmd/dep
   fi
 
-  if [[ ! -d "$GOPATH/src/gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering" ]]; then
+  if [[ ! -L "$GOPATH/src/gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering" ]]; then
+    rm -rf "$GOPATH/src/gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering"
     mkdir -p "$GOPATH/src/gitlab.hpi.de/felix.seidel"
-    cp -r "$DIR/iotsec-enroute-filtering" "$GOPATH/src/gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering"
+    ln -s "$DIR" "$GOPATH/src/gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering"
   fi
 
   cd "$GOPATH/src/gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter"
@@ -33,41 +34,75 @@ build() {
 }
 
 package() {
-  [[ -d "$DIR/package" ]] && rm -rf "$DIR/package"
+  [[ -d "$DIR/_build/package" ]] && rm -rf "$DIR/_build/package"
 
-  mkdir -p "$DIR/package/enroute-filter-0.1"
-  cd "$DIR/package/enroute-filter-0.1"
+  mkdir -p "$DIR/_build/package/enroute-filter-$PKGVER"
+  cd "$DIR/_build/package/enroute-filter-$PKGVER"
 
-  cp "$GOPATH/src/gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/filter" "$DIR/package/enroute-filter-0.1/enroute-filter"
-  cp "$GOPATH/src/gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/enroute-filter.service" "$DIR/package/enroute-filter-0.1/"
+  cp "$GOPATH/src/gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/filter" "$DIR/_build/package/enroute-filter-$PKGVER/enroute-filter"
+  cp "$GOPATH/src/gitlab.hpi.de/felix.seidel/iotsec-enroute-filtering/filter/enroute-filter.service" "$DIR/_build/package/enroute-filter-$PKGVER/"
 
-  dh_make --createorig --packageclass s # single binary
-  printf "enroute-filter usr/bin\nenroute-filter.service lib/systemd/system\n" > "$DIR/package/enroute-filter-0.1/debian/install"
-  cat > "$DIR/package/enroute-filter-0.1/debian/postinst" <<EOF
-#!/bin/bash
+  dh_make --yes --createorig --packageclass s # single binary
+  printf "enroute-filter usr/bin\nenroute-filter.service lib/systemd/system\n" > "$DIR/_build/package/enroute-filter-$PKGVER/debian/install"
+  cat > "$DIR/_build/package/enroute-filter-$PKGVER/debian/postinst" <<EOF
+#!/usr/bin/env bash
 systemctl daemon-reload
 systemctl enable enroute-filter
 systemctl start enroute-filter
 EOF
-  chmod +x "$DIR/package/enroute-filter-0.1/debian/postinst"
+  cat > "$DIR/_build/package/enroute-filter-$PKGVER/debian/prerm" <<EOF
+#!/usr/bin/env bash
+systemctl stop enroute-filter
+systemctl disable enroute-filter
+EOF
+  cat > "$DIR/_build/package/enroute-filter-$PKGVER/debian/postrm" <<EOF
+#!/usr/bin/env bash
+systemctl daemon-reload
+EOF
+  chmod +x "$DIR/_build/package/enroute-filter-$PKGVER/debian"/{postinst,prerm,postrm}
   debuild -us -uc
-  mv "$DIR"/package/*.deb "$DIR/"
+  mv "$DIR"/_build/package/*.deb "$DIR/_build/"
 }
 
 main() {
-    if [[ -z "${ARCH:-}" ]]; then
-    >&2 echo "Please set ARCH to arm64, armv6l, or amd64"
-    exit 1
+  if [[ -z "${ARCH:-}" ]]; then
+    printf "ARCH [arm64, armv6l, amd64]: "
+    read ARCH
+    if [[ -z $ARCH ]]; then
+      >&2 echo "No ARCH given, exiting"
+      exit 1
+    fi
+    export ARCH
   fi
 
   if [[ -z "${DEBEMAIL:-}" ]]; then
-    >&2 echo "Please set DEBEMAIL"
-    exit 1
+    printf "DEBEMAIL [some@email.com]: "
+    read DEBEMAIL
+    if [[ -z $DEBEMAIL ]]; then
+      >&2 echo "No DEBEMAIL given, exiting"
+      exit 1
+    fi
+    export DEBEMAIL
   fi
 
   if [[ -z "${DEBFULLNAME:-}" ]]; then
-    >&2 echo "Please set DEBFULLNAME"
-    exit 1
+    printf "DEBFULLNAME [Some Name]: "
+    read DEBFULLNAME
+    if [[ -z $DEBFULLNAME ]]; then
+      >&2 echo "No DEBFULLNAME given, exiting"
+      exit 1
+    fi
+    export DEBFULLNAME
+  fi
+
+  if [[ -z "${PKGVER:-}" ]]; then
+    printf "PKGVER [0.1.0-1]: "
+    read PKGVER
+    if [[ -z $PKGVER ]]; then
+      >&2 echo "No PKGVER given, exiting"
+      exit 1
+    fi
+    export PKGVER
   fi
 
   check_pkg 'libnetfilter-queue-dev'
@@ -76,11 +111,7 @@ main() {
   check_pkg 'dh-make'
   check_pkg 'devscripts'
 
-  if [[ ! -d "$DIR/iotsec-enroute-filtering" ]]; then
-    >&2 echo "Please run 'git clone git@gitlab.hpi.de:felix.seidel/iotsec-enroute-filtering.git'"
-    exit 1
-  fi
-
+  rm -rf "$DIR/_build/package" "$DIR"/_build/*.deb
   build
   package
 }
